@@ -1,0 +1,85 @@
+.goal-item {
+  margin: 1rem auto;
+  background: #8b005d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  color: white;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  width: 30rem;
+  max-width: 90%;
+  border-radius: 10px;
+  display: inline-block;
+  width: 70%; /* adjust as needed */
+}
+
+.goal-button {
+  background: #8b005d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  max-width: 90%;
+  width: auto;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* display: inline-block; */
+  width: 100%; /* adjust as needed */
+}
+
+/* Media query for screens smaller than 768px */
+@media (max-width: 767px) {
+  .goal-item {
+    width: 60%;
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+
+  .goal-button {
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+
+  .wrapper {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* Media query for screens larger than 768px */
+@media (min-width: 768px) {
+  .goal-item {
+    width: 70%;
+  }
+
+  .goal-button {
+    margin-left: 1rem;
+  }
+}
+
+/* Media query for screens smaller than 376px */
+@media (max-width: 376px) {
+  .goal-item {
+    width: 55%;
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+
+  .goal-button {
+    margin-left: 0;
+    margin-top: 1rem;
+    width: auto;
+  }
+
+  .wrapper {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
