@@ -13,6 +13,8 @@ import {
   doc,
   onSnapshot,
   updateDoc,
+  where,
+  query,
 } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
@@ -21,6 +23,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { set } from "firebase/database";
+import Button from "./components/UI/Button/Button";
 // import { getAuth } from "firebase/auth";
 // import { useAuthState } from "react-firebase-hooks/auth";
 // import { useCollectionData } from "react-firebase-hooks/firestore";
@@ -31,41 +34,34 @@ import { set } from "firebase/database";
 // const auth = getAuth();
 
 const App = () => {
-  const [courseGoals, setCourseGoals] = useState([
-    // { text: "Do all exercises!", id: "g1" },
-    // { text: "Finish the course!", id: "g2" },
-  ]);
+  const [courseGoals, setCourseGoals] = useState([]);
   const [authUser, setAuthUser] = useState(null);
 
-  // useEffect(() => {
-  //   getGoals();
-  // }, []);
-
-  // useEffect(() => {
-  //   console.log(courseGoals);
-  // }, [courseGoals]);
-
   useEffect(() => {
-    const goalCollectionRef = collection(db, "goals");
-    const unsubscribe = onSnapshot(goalCollectionRef, (snapshot) => {
-      setCourseGoals(
-        snapshot.docs.map((doc) => ({
-          data: doc.data(),
-          id: doc.id,
-          color: doc.data().color,
-        }))
-      );
-    });
+    if (authUser) {
+      const goalCollectionRef = collection(db, "goals");
+      const q = query(goalCollectionRef, where("uid", "==", authUser.uid));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setCourseGoals(
+          snapshot.docs.map((doc) => ({
+            data: doc.data(),
+            id: doc.id,
+            color: doc.data().color,
+          }))
+        );
+      });
 
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [authUser]);
 
   useEffect(() => {
     const listen = onAuthStateChanged(auth, (user) => {
       if (user) {
         setAuthUser(user);
+        console.log(user.uid);
       } else {
         setAuthUser(null);
       }
@@ -76,35 +72,38 @@ const App = () => {
   }, []);
 
   const getGoals = () => {
-    const goalCollectionRef = collection(db, "goals");
-    getDocs(goalCollectionRef)
-      .then((response) => {
-        const gls = response.docs.map((doc) => ({
-          data: doc.data(),
-          id: doc.id,
-        }));
-        setCourseGoals(gls);
-      })
-      .catch((error) => console.log(error.message));
+    if (authUser) {
+      const uid = authUser.uid;
+      const goalCollectionRef = collection(db, "goals");
+      const q = query(goalCollectionRef, where("uid", "==", uid));
+
+      getDocs(q)
+        .then((response) => {
+          const gls = response.docs.map((doc) => ({
+            data: doc.data(),
+            id: doc.id,
+          }));
+          setCourseGoals(gls);
+        })
+        .catch((error) => console.log(error.message));
+    }
   };
 
   const addGoalHandler = (title) => {
-    // setCourseGoals((prevGoals) => {
-    //   const updatedGoals = [...prevGoals];
-    //   updatedGoals.unshift({ text: enteredText, id: Math.random().toString() });
-    //   return updatedGoals;
+    if (authUser) {
+      const uid = authUser.uid;
 
-    const goalCollRef = collection(db, "goals");
-    addDoc(goalCollRef, { title, color: false })
-      .then((response) => {
-        console.log(response);
-        // window.location.reload();
-        getGoals();
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
-    // });
+      const goalCollRef = collection(db, "goals");
+
+      addDoc(goalCollRef, { title, color: false, uid })
+        .then((response) => {
+          console.log(response);
+          getGoals();
+        })
+        .catch((error) => {
+          console.log(error.message);
+        });
+    }
   };
 
   const deleteItemHandler = (goalId) => {
@@ -112,15 +111,9 @@ const App = () => {
     deleteDoc(docRef)
       .then(() => {
         console.log("Document Deleted");
-        // window.location.reload();
         getGoals();
       })
       .catch((error) => console.log(error.message));
-
-    // setCourseGoals((prevGoals) => {
-    //   const updatedGoals = prevGoals.filter((goal) => goal.id !== goalId);
-    //   return updatedGoals;
-    // });
   };
 
   const updateGoalColorHandler = (goalId) => {
@@ -160,6 +153,7 @@ const App = () => {
     signOut(auth)
       .then(() => {
         console.log("Sign Out successful");
+        setCourseGoals([]);
       })
       .catch((error) => console.log(error));
   };
@@ -204,7 +198,6 @@ const App = () => {
           />
         </React.Fragment>
       )}
-      {/* <Login /> */}
     </div>
   );
 };
