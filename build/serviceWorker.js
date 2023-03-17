@@ -11,19 +11,12 @@
 //STORAGE OF BROWSER
 const CACHE_NAME = "version-1";
 const urlsToCache = [
-  // "/static/js/bundle.js",
+  "/",
   "/regist_serviceworker.js",
   "/index.html",
-  "/",
-  // "/app.js",
   "/static/js/main.eb27ed9c.js",
-  // "/static/js/main.eb27ed9c.js.map",
   "/static/css/main.b983daaf.css",
-  // "/static/css/main.b983daaf.css.map",
-  // "build/static/js/main.eb27ed9c.js",
-  // "/build/static/js/main.eb27ed9c.js",
-  // "/build",
-  // "build",
+  // "/app.js",  //only in production
 ];
 const self = this;
 

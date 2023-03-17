@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Fragment } from "react";
-import { db, app, auth } from "./firebase";
+import { db, app, auth, provider } from "./firebase";
 
 import SignIn from "./components/Login/SignIn";
 import CourseGoalList from "./components/CourseGoals/CourseGoalList/CourseGoalList";
@@ -21,9 +21,9 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  signInWithPopup,
 } from "firebase/auth";
 import { set } from "firebase/database";
-import Button from "./components/UI/Button/Button";
 // import { getAuth } from "firebase/auth";
 // import { useAuthState } from "react-firebase-hooks/auth";
 // import { useCollectionData } from "react-firebase-hooks/firestore";
@@ -36,6 +36,7 @@ import Button from "./components/UI/Button/Button";
 const App = () => {
   const [courseGoals, setCourseGoals] = useState([]);
   const [authUser, setAuthUser] = useState(null);
+  const [value, setValue] = useState("");
 
   useEffect(() => {
     if (authUser) {
@@ -173,6 +174,17 @@ const App = () => {
     );
   }
 
+  const handleClick = () => {
+    signInWithPopup(auth, provider).then((data) => {
+      setValue(data.user.email);
+      localStorage.setItem("email", data.user.email);
+    });
+  };
+
+  useEffect(() => {
+    setValue(localStorage.getItem("email"));
+  });
+
   return (
     <div>
       {authUser ? (
@@ -196,6 +208,7 @@ const App = () => {
             message={"Register your account"}
             onSign={signUpHandler}
           />
+          <button onClick={handleClick}>Sign In with Google</button>
         </React.Fragment>
       )}
     </div>
