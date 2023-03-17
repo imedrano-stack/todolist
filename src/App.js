@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useLayoutEffect } from "react";
-import { db } from "./firebase";
+import React, { useEffect, useState, Fragment } from "react";
+import { db, app, auth } from "./firebase";
 
+import SignIn from "./components/Login/SignIn";
 import CourseGoalList from "./components/CourseGoals/CourseGoalList/CourseGoalList";
 import CourseInput from "./components/CourseGoals/CourseInput/CourseInput";
 import "./App.css";
@@ -13,12 +14,28 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { set } from "firebase/database";
+// import { getAuth } from "firebase/auth";
+// import { useAuthState } from "react-firebase-hooks/auth";
+// import { useCollectionData } from "react-firebase-hooks/firestore";
+
+// import firebase from "firebase/app";
+// import Home from "./Home";
+
+// const auth = getAuth();
 
 const App = () => {
   const [courseGoals, setCourseGoals] = useState([
     // { text: "Do all exercises!", id: "g1" },
     // { text: "Finish the course!", id: "g2" },
   ]);
+  const [authUser, setAuthUser] = useState(null);
 
   // useEffect(() => {
   //   getGoals();
@@ -42,6 +59,19 @@ const App = () => {
 
     return () => {
       unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const listen = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setAuthUser(user);
+      } else {
+        setAuthUser(null);
+      }
+    });
+    return () => {
+      listen();
     };
   }, []);
 
@@ -102,6 +132,38 @@ const App = () => {
       .catch((error) => console.log(error.message));
   };
 
+  const signInHandler = (event, email, password, auth) => {
+    event.preventDefault();
+    console.log("Email: ", email);
+    console.log("Password: ", password);
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        console.log(userCredential);
+      })
+      .catch((error) => console.log(error));
+  };
+
+  const signUpHandler = (event, email, password, auth) => {
+    event.preventDefault();
+    console.log("Email: ", email);
+    console.log("Password: ", password);
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        console.log(userCredential);
+      })
+      .catch((error) => console.log(error));
+  };
+
+  // const userEmail = authUser.email;
+
+  const userSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        console.log("Sign Out successful");
+      })
+      .catch((error) => console.log(error));
+  };
+
   let content = (
     <p style={{ textAlign: "center" }}>No goals found. Maybe add one?</p>
   );
@@ -112,25 +174,37 @@ const App = () => {
         items={courseGoals}
         onDeleteItem={deleteItemHandler}
         onUpdateColorItem={updateGoalColorHandler}
+        onLogOut={userSignOut}
       />
     );
   }
 
   return (
     <div>
-      <section id="goal-form">
-        <CourseInput onAddGoal={addGoalHandler} />
-      </section>
-      <section id="goals">
-        {content}
-        {/* {courseGoals.length > 0 && (
-          <CourseGoalList
-            items={courseGoals}
-            onDeleteItem={deleteItemHandler}
+      {authUser ? (
+        <>
+          <section id="goal-form">
+            <CourseInput onAddGoal={addGoalHandler} user={authUser.email} />
+          </section>
+          <section id="goals">{content}</section>
+        </>
+      ) : (
+        <React.Fragment>
+          <SignIn
+            id={"loginButton"}
+            label={"Log In"}
+            message={"Enter your account"}
+            onSign={signInHandler}
           />
-        ) // <p style={{ textAlign: 'center' }}>No goals found. Maybe add one?</p>
-        } */}
-      </section>
+          <SignIn
+            id={"registerButton"}
+            label={"Register"}
+            message={"Register your account"}
+            onSign={signUpHandler}
+          />
+        </React.Fragment>
+      )}
+      {/* <Login /> */}
     </div>
   );
 };
